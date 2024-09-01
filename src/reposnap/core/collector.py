@@ -4,6 +4,8 @@ from .file_system import FileSystem
 from .git_repo import GitRepo
 from .markdown_generator import MarkdownGenerator
 import pathspec
+import logging
+
 
 class ProjectContentCollector:
     def __init__(self, root_dir: str, output_file: str, structure_only: bool, gitignore_patterns: list):
@@ -18,4 +20,5 @@ class ProjectContentCollector:
     def collect_and_generate(self):
         git_files = self.git_repo.get_git_files()
         tree_structure = self.file_system.build_tree_structure(git_files)
-        self.markdown_generator.generate_markdown(self.output_file, tree_structure, git_files, self.spec, self.structure_only)
+        self.markdown_generator.generate_markdown(self.output_file, tree_structure, git_files, self.spec,
+                                                  self.structure_only)
