@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Project Content Collector is a Python script designed to generate a Markdown file that documents the structure and contents of a project directory. This tool is particularly useful for creating a quick overview of a project's file hierarchy, including optional syntax-highlighted code snippets.
+The Project Content Collector is a Python script designed to generate a Markdown file that documents the structure and contents of a git project. This tool is particularly useful for creating a quick overview of a project's file hierarchy, including optional syntax-highlighted code snippets.
 
 ## Features
 
