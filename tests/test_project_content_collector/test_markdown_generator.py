@@ -1,6 +1,6 @@
 # src/project_content_collector/tests/test_markdown_generator.py
 
-import pytest
+import pytest  # noqa
 from project_content_collector.core.markdown_generator import MarkdownGenerator
 from unittest.mock import mock_open, patch
 

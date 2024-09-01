@@ -1,6 +1,6 @@
 # src/project_content_collector/tests/test_path_utils.py
 
-import pytest
+import pytest  # noqa
 from project_content_collector.utils.path_utils import format_tree
 
 def test_format_tree():

@@ -1,6 +1,6 @@
 # src/project_content_collector/tests/test_collector.py
 
-import pytest
+import pytest  # noqa
 from unittest.mock import patch, MagicMock
 from project_content_collector.core.collector import ProjectContentCollector
 

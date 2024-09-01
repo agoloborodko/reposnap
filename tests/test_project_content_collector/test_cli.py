@@ -4,7 +4,6 @@ import pytest
 from unittest.mock import patch, MagicMock
 import os
 import tempfile
-from pathlib import Path
 from project_content_collector.interfaces.cli import main
 
 def create_file(file_path: str, content: str = ''):
