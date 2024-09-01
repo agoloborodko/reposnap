@@ -1,4 +1,4 @@
-# src/project_content_collector/core/markdown_generator.py
+# src/reposnap/core/markdown_generator.py
 
 from pathlib import Path
 from ..utils.path_utils import format_tree

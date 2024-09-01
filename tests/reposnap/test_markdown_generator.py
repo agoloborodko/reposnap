@@ -1,7 +1,7 @@
-# src/project_content_collector/tests/test_markdown_generator.py
+# src/reposnap/tests/test_markdown_generator.py
 
 import pytest  # noqa
-from project_content_collector.core.markdown_generator import MarkdownGenerator
+from reposnap.core.markdown_generator import MarkdownGenerator
 from unittest.mock import mock_open, patch
 
 def test_generate_markdown():

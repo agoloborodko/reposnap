@@ -1,10 +1,10 @@
-# src/project_content_collector/tests/test_cli.py
+# src/reposnap/tests/test_cli.py
 
 import pytest
 from unittest.mock import patch, MagicMock
 import os
 import tempfile
-from project_content_collector.interfaces.cli import main
+from reposnap.interfaces.cli import main
 
 def create_file(file_path: str, content: str = ''):
     """Helper function to create a file with the given content."""
@@ -66,7 +66,7 @@ def temp_dir():
         create_directory_structure(temp_dir, structure)
         yield temp_dir
 
-@patch('project_content_collector.interfaces.cli.ProjectContentCollector')
+@patch('reposnap.interfaces.cli.ProjectContentCollector')
 def test_cli(mock_collector, temp_dir):
     mock_collector_instance = MagicMock()
     mock_collector.return_value = mock_collector_instance

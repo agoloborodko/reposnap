@@ -1,13 +1,13 @@
-# src/project_content_collector/tests/test_collector.py
+# src/reposnap/tests/test_collector.py
 
 import pytest  # noqa
 from unittest.mock import patch, MagicMock
-from project_content_collector.core.collector import ProjectContentCollector
+from reposnap.core.collector import ProjectContentCollector
 
 
-@patch('project_content_collector.core.collector.MarkdownGenerator')
-@patch('project_content_collector.core.collector.FileSystem')
-@patch('project_content_collector.core.collector.GitRepo')
+@patch('reposnap.core.collector.MarkdownGenerator')
+@patch('reposnap.core.collector.FileSystem')
+@patch('reposnap.core.collector.GitRepo')
 def test_collect_and_generate(mock_git_repo, mock_file_system, mock_markdown_generator):
     # Setup mocks
     mock_git_repo_instance = MagicMock()

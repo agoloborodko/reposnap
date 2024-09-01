@@ -1,8 +1,8 @@
-# Project Content Collector
+# RepoSnap
 
 ## Overview
 
-The Project Content Collector is a Python script designed to generate a Markdown file that documents the structure and contents of a git project. This tool is particularly useful for creating a quick overview of a project's file hierarchy, including optional syntax-highlighted code snippets.
+`reposnap` is a Python script designed to generate a Markdown file that documents the structure and contents of a git project. This tool is particularly useful for creating a quick overview of a project's file hierarchy, including optional syntax-highlighted code snippets.
 
 ## Features
 

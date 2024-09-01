@@ -1,4 +1,4 @@
-# src/project_content_collector/utils/path_utils.py
+# src/reposnap/utils/path_utils.py
 
 def format_tree(tree, indent=''):
     for key, value in tree.items():

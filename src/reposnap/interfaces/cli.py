@@ -1,7 +1,7 @@
-# src/project_content_collector/interfaces/cli.py
+# src/reposnap/interfaces/cli.py
 
 import argparse
-from project_content_collector.core.collector import ProjectContentCollector
+from reposnap.core.collector import ProjectContentCollector
 
 def main():
     parser = argparse.ArgumentParser(description='Generate a Markdown representation of a Git repository.')

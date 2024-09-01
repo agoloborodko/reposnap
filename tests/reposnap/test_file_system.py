@@ -1,7 +1,7 @@
-# src/project_content_collector/tests/test_file_system.py
+# src/reposnap/tests/test_file_system.py
 
 import pytest
-from project_content_collector.core.file_system import FileSystem
+from reposnap.core.file_system import FileSystem
 
 @pytest.fixture
 def file_system(tmp_path):

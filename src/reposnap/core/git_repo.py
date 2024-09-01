@@ -1,4 +1,4 @@
-# src/project_content_collector/core/git_repo.py
+# src/reposnap/core/git_repo.py
 
 from git import Repo, InvalidGitRepositoryError
 

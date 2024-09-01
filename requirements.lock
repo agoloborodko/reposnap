@@ -13,10 +13,10 @@
 gitdb==4.0.11
     # via gitpython
 gitpython==3.1.43
-    # via project-content-collector
+    # via reposnap
 pathlib==1.0.1
-    # via project-content-collector
+    # via reposnap
 pathspec==0.12.1
-    # via project-content-collector
+    # via reposnap
 smmap==5.0.1
     # via gitdb

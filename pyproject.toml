@@ -1,7 +1,7 @@
 [project]
-name = "project-content-collector"
-version = "0.1.0"
-description = "Add your description here"
+name = "reposnap"
+version = "0.2.0"
+description = "Generate a Markdown file with all contents of your project"
 authors = [
     { name = "agoloborodko" }
 ]
@@ -27,4 +27,4 @@ dev-dependencies = [
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/project_content_collector"]
+packages = ["src/reposnap"]

@@ -1,4 +1,4 @@
-# src/project_content_collector/core/file_system.py
+# src/reposnap/core/file_system.py
 
 from pathlib import Path
 

@@ -13,15 +13,15 @@
 gitdb==4.0.11
     # via gitpython
 gitpython==3.1.43
-    # via project-content-collector
+    # via reposnap
 iniconfig==2.0.0
     # via pytest
 packaging==24.1
     # via pytest
 pathlib==1.0.1
-    # via project-content-collector
+    # via reposnap
 pathspec==0.12.1
-    # via project-content-collector
+    # via reposnap
 pluggy==1.5.0
     # via pytest
 pytest==8.3.2

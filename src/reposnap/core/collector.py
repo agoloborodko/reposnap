@@ -1,4 +1,4 @@
-# src/project_content_collector/core/collector.py
+# src/reposnap/core/collector.py
 
 from .file_system import FileSystem
 from .git_repo import GitRepo
