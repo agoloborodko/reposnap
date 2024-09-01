@@ -18,14 +18,14 @@
 To use the `collect.py` script, run it with the following options:
 
 ```bash
-python -m collect <project_root> [-o OUTPUT] [-e EXCLUDE ...] [-x EXCLUDE_FILE] [--structure-only]
+reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
 ```
 
-- `<project_root>`: The root directory of the project to document.
-- `-o, --output`: The name of the output Markdown file. Defaults to `repo-content-<timestamp>.md`.
-- `-e, --exclude`: Patterns of files or directories to exclude (supports multiple patterns).
-- `-x, --exclude-file`: A file (e.g., `.gitignore`) containing patterns of files or directories to exclude.
+- `path`: Path to the Git repository root folder
+- `-h, --help`: show help message and exit
+- `-o, --output`: The name of the output Markdown file. Defaults to `output.md`.
 - `--structure-only`: Generate a Markdown file that includes only the project structure, without file contents.
+- `--debug`: Enable debug-level logging.
 
 ### Examples
 

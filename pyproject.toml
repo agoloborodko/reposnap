@@ -28,3 +28,6 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/reposnap"]
+
+[project.scripts]
+reposnap = "collect:main"
