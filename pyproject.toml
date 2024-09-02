@@ -1,6 +1,6 @@
 [project]
 name = "reposnap"
-version = "0.2.2"
+version = "0.2.3"
 description = "Generate a Markdown file with all contents of your project"
 authors = [
     { name = "agoloborodko" }
@@ -30,4 +30,4 @@ allow-direct-references = true
 packages = ["src/reposnap"]
 
 [project.scripts]
-reposnap = "collect:main"
+reposnap = "reposnap:main"
