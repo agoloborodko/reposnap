@@ -13,7 +13,7 @@
 
 ### Command-Line Interface
 
-To use the `collect.py` script, run it with the following options:
+To use `reposnap`, run it with the following options:
 
 ```bash
 reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
@@ -30,7 +30,7 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
 1. **Generate a full project structure with file contents**:
 
     ```bash
-    reposnap my_project/
+    reposnap .
     ```
 
 2. **Generate a project structure only**:
