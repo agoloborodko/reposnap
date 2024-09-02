@@ -9,6 +9,19 @@
 - **Syntax Highlighting**: Includes syntax highlighting for known file types in the generated Markdown file.
 - **Structure Only Option**: The `--structure-only` flag can be used to generate the Markdown file with just the directory structure, omitting the contents of the files.
 
+## Installation
+```bash
+pip install reposnap
+```
+
+Alternatively, you can clone the repository and install the required dependencies:
+
+```bash
+git clone https://github.com/username/reposnap.git
+cd reposnap
+pip install -r requirements.lock
+```
+
 ## Usage
 
 ### Command-Line Interface
@@ -56,3 +69,8 @@ rye test
 ## License
 
 This project is licensed under the MIT License.
+
+## Acknowledgments
+
+- [GitPython](https://gitpython.readthedocs.io/) - Used for interacting with Git repositories.
+- [pathspec](https://pathspec.readthedocs.io/) - Used for pattern matching file paths.
