@@ -4,20 +4,27 @@ import logging
 from pathlib import Path
 
 class FileSystem:
-    def __init__(self, root_dir: str):
-        self.root_dir = Path(root_dir).resolve()
+    def __init__(self, root_dir: Path):
+        self.root_dir = root_dir.resolve()
+        self.logger = logging.getLogger(__name__)
 
     def build_tree_structure(self, files):
+        """
+        Builds a hierarchical tree structure from the list of files.
+
+        Args:
+            files (list of Path): List of file paths relative to root_dir.
+
+        Returns:
+            dict: Nested dictionary representing the directory structure.
+        """
         tree = {}
-        logging.debug("\n>>> Processing Files for Tree Structure <<<")
-        for file in files:
-            file_path = (self.root_dir / file).resolve()
-            logging.debug(f"Processing file:\n  File Path: {file_path}\n  Root Dir:  {self.root_dir}")
-            relative_path = file_path.relative_to(self.root_dir).as_posix()
-            parts = relative_path.split('/')
+        self.logger.debug("Building tree structure.")
+        for relative_path in files:
+            parts = relative_path.parts
             current_level = tree
             for part in parts[:-1]:
                 current_level = current_level.setdefault(part, {})
-            current_level[parts[-1]] = relative_path
-        logging.debug(">>> End of Processing <<<\n")
+            current_level[parts[-1]] = relative_path.as_posix()
+        self.logger.debug(f"Tree structure built: {tree}")
         return tree

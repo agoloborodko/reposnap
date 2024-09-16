@@ -1,6 +1,7 @@
+# tests/reposnap/test_markdown_generator.py
+
 import pytest
 from reposnap.core.markdown_generator import MarkdownGenerator
-from unittest.mock import call
 from pathlib import Path
 
 
@@ -15,30 +16,32 @@ def markdown_generator_factory(resources_dir, tmp_path):
         # Use a temporary directory for the output file
         output_file = tmp_path / "output.md"
         return MarkdownGenerator(root_dir=resources_dir, output_file=output_file, structure_only=structure_only)
-
     return _factory
 
 
 @pytest.mark.parametrize("git_files,expected_calls", [
     (
-            ['existing_file.py', 'missing_file.py', 'another_existing_file.py'],
-            [
-                "## existing_file.py\n\n",
-                "```python\n",
-                'print("Hello, world!")\n',
-                '```\n\n',
-                "## another_existing_file.py\n\n",
-                "```python\n",
-                'print("Another file")\n',
-                '```\n\n'
-            ]
+        ['existing_file.py', 'missing_file.py', 'another_existing_file.py'],
+        [
+            "## existing_file.py\n\n",
+            "```python\n",
+            'print("Hello, world!")\n',
+            '```\n\n',
+            "## another_existing_file.py\n\n",
+            "```python\n",
+            'print("Another file")\n',
+            '```\n\n'
+        ]
     ),
 ])
 def test_generate_markdown_with_missing_files(resources_dir, markdown_generator_factory, git_files, expected_calls):
     markdown_generator = markdown_generator_factory(structure_only=False)
 
+    # Use relative paths for git_files_paths
+    git_files_paths = [Path(f) for f in git_files]
+
     # Generate the markdown file and verify the output
-    markdown_generator.generate_markdown({}, git_files)
+    markdown_generator.generate_markdown({}, git_files_paths)
     output_content = markdown_generator.output_file.read_text()
 
     # Join expected calls into a single string
