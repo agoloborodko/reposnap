@@ -32,7 +32,7 @@ To use `reposnap`, run it with the following options:
 reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
 ```
 
-- `path`: Path to the Git repository root folder
+- `path`: Path to the Git repository or subdirectory
 - `-h, --help`: show help message and exit
 - `-o, --output`: The name of the output Markdown file. Defaults to `output.md`.
 - `--structure-only`: Generate a Markdown file that includes only the project structure, without file contents.
