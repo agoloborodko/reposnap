@@ -2,9 +2,7 @@
 
 import argparse
 import logging
-import os
-from reposnap.core.collector import ProjectContentCollector
-from pathlib import Path
+from reposnap.controllers.project_controller import ProjectController
 
 
 def main():
@@ -20,27 +18,8 @@ def main():
     log_level = logging.DEBUG if args.debug else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    path = Path(args.path).resolve()
-    gitignore_path = path / '.gitignore'
-    if not gitignore_path.exists():
-        # Search for .gitignore in parent directories
-        for parent in path.parents:
-            gitignore_path = parent / '.gitignore'
-            if gitignore_path.exists():
-                break
-        else:
-            gitignore_path = None
-
-    if gitignore_path and gitignore_path.exists():
-        with gitignore_path.open('r') as gitignore:
-            patterns = gitignore.readlines()
-        logging.debug(f"Patterns from .gitignore in {gitignore_path.parent}: {patterns}")
-    else:
-        patterns = []
-        logging.debug(f"No .gitignore found starting from {args.path}. Proceeding without patterns.")
-
-    collector = ProjectContentCollector(str(path), args.output, args.structure_only, patterns)
-    collector.collect_and_generate()
+    controller = ProjectController(args)
+    controller.run()
 
 if __name__ == "__main__":
     main()
