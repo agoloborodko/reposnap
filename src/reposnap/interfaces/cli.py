@@ -7,7 +7,7 @@ from reposnap.controllers.project_controller import ProjectController
 
 def main():
     parser = argparse.ArgumentParser(description='Generate a Markdown representation of a Git repository.')
-    parser.add_argument('path', help='Path to the Git repository or subdirectory.')
+    parser.add_argument('path', nargs='?', default='.', help='Path to the Git repository or subdirectory.')
     parser.add_argument('-o', '--output', help='Output Markdown file', default='output.md')
     parser.add_argument('--structure-only', action='store_true',
                         help='Only include the file structure without content.')

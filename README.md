@@ -2,14 +2,20 @@
 
 ## Overview
 
-`reposnap` is a Python script designed to generate a Markdown file that documents the structure and contents of a git project. This tool is particularly useful for creating a quick overview of a project's file hierarchy, including optional syntax-highlighted code snippets.
+`reposnap` is a Python tool designed to generate a Markdown file that documents the structure and contents of a Git project. It provides both a command-line interface (CLI) and a graphical user interface (GUI) for ease of use. This tool is particularly useful for creating a quick overview of a project's file hierarchy, including optional syntax-highlighted code snippets.
 
 ## Features
 
+- **Command-Line Interface (CLI)**: Quickly generate documentation from the terminal.
+- **Graphical User Interface (GUI)**: A user-friendly GUI if you want to select files and directories interactively.
 - **Syntax Highlighting**: Includes syntax highlighting for known file types in the generated Markdown file.
 - **Structure Only Option**: The `--structure-only` flag can be used to generate the Markdown file with just the directory structure, omitting the contents of the files.
+- **Gitignore Support**: Automatically respects `.gitignore` patterns to exclude files and directories.
 
 ## Installation
+
+You can install `reposnap` using pip:
+
 ```bash
 pip install reposnap
 ```
@@ -19,26 +25,26 @@ Alternatively, you can clone the repository and install the required dependencie
 ```bash
 git clone https://github.com/username/reposnap.git
 cd reposnap
-pip install -r requirements.lock
+pip install -r requirements.txt
 ```
 
 ## Usage
 
 ### Command-Line Interface
 
-To use `reposnap`, run it with the following options:
+To use `reposnap` from the command line, run it with the following options:
 
 ```bash
 reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
 ```
 
-- `path`: Path to the Git repository or subdirectory
-- `-h, --help`: show help message and exit
+- `path`: Path to the Git repository or subdirectory.
+- `-h, --help`: Show help message and exit.
 - `-o, --output`: The name of the output Markdown file. Defaults to `output.md`.
 - `--structure-only`: Generate a Markdown file that includes only the project structure, without file contents.
 - `--debug`: Enable debug-level logging.
 
-### Examples
+#### Examples
 
 1. **Generate a full project structure with file contents**:
 
@@ -58,12 +64,40 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
     reposnap my_project/ -o output.md
     ```
 
-## Testing
+### Graphical User Interface
 
-To run the tests, use `rye`:
+`reposnap` also provides a GUI for users who prefer an interactive interface.
+
+To launch the GUI, simply run:
 
 ```bash
-rye test
+reposnap-gui
+```
+
+#### Using the GUI
+
+1. **Select Root Directory**: When the GUI opens, you can specify the root directory of your Git project. By default, it uses the current directory.
+
+2. **Scan the Project**: Click the "Scan" button to analyze the project. The GUI will display the file tree of your project.
+
+3. **Select Files and Directories**: Use the checkboxes to select which files and directories you want to include in the Markdown documentation. Toggling a directory checkbox will toggle all its child files and directories.
+
+4. **Generate Markdown**: After selecting the desired files, click the "Render" button. The Markdown file will be generated and saved as `output.md` in the current directory.
+
+5. **Exit**: Click the "Exit" button to close the GUI.
+
+## Testing
+
+To run the tests, use the following command:
+
+```bash
+pytest tests/
+```
+
+Ensure that you have the `pytest` library installed:
+
+```bash
+pip install pytest
 ```
 
 ## License
@@ -74,3 +108,4 @@ This project is licensed under the MIT License.
 
 - [GitPython](https://gitpython.readthedocs.io/) - Used for interacting with Git repositories.
 - [pathspec](https://pathspec.readthedocs.io/) - Used for pattern matching file paths.
+- [Urwid](https://urwid.org/) - Used for creating the GUI interface.

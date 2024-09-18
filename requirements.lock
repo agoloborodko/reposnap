@@ -20,3 +20,9 @@ pathspec==0.12.1
     # via reposnap
 smmap==5.0.1
     # via gitdb
+typing-extensions==4.12.2
+    # via urwid
+urwid==2.6.15
+    # via reposnap
+wcwidth==0.2.13
+    # via urwid

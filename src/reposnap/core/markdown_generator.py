@@ -7,10 +7,11 @@ from typing import List, Dict, Any
 
 
 class MarkdownGenerator:
-    def __init__(self, root_dir: Path, output_file: Path, structure_only: bool = False):
+    def __init__(self, root_dir: Path, output_file: Path, structure_only: bool = False, hide_untoggled: bool = False):
         self.root_dir: Path = root_dir.resolve()
         self.output_file: Path = output_file.resolve()
         self.structure_only: bool = structure_only
+        self.hide_untoggled: bool = hide_untoggled
         self.logger = logging.getLogger(__name__)
 
     def generate_markdown(self, tree_structure: Dict[str, Any], files: List[Path]) -> None:
@@ -34,7 +35,7 @@ class MarkdownGenerator:
             with self.output_file.open('w', encoding='utf-8') as f:
                 f.write("# Project Structure\n\n")
                 f.write("```\n")
-                for line in format_tree(tree_structure):
+                for line in format_tree(tree_structure, hide_untoggled=self.hide_untoggled):
                     f.write(line)
                 f.write("```\n\n")
             self.logger.debug("Header and project structure written successfully.")
@@ -72,4 +73,3 @@ class MarkdownGenerator:
                 f.write(f"{content}\n```\n\n")
         except IOError as e:
             self.logger.error(f"Error reading or writing file {file_path}: {e}")
-

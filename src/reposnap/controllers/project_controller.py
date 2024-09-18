@@ -11,14 +11,23 @@ from typing import List, Optional
 
 
 class ProjectController:
-    def __init__(self, args: object):
+    def __init__(self, args: Optional[object] = None):
         self.logger = logging.getLogger(__name__)
-        self.root_dir: Path = Path(args.path).resolve()
-        self.output_file: Path = Path(args.output).resolve()
-        self.structure_only: bool = args.structure_only
+        self.root_dir: Path = Path(args.path).resolve() if args else Path('.').resolve()
+        self.output_file: Path = Path(args.output).resolve() if args else Path('output.md').resolve()
+        self.structure_only: bool = args.structure_only if args else False
         self.args: object = args
         self.file_tree: Optional[FileTree] = None
-        self.gitignore_patterns: List[str] = self._load_gitignore_patterns()
+        self.gitignore_patterns: List[str] = []
+        if self.root_dir:
+            self.gitignore_patterns = self._load_gitignore_patterns()
+
+    def set_root_dir(self, root_dir: Path) -> None:
+        self.root_dir = root_dir
+        self.gitignore_patterns = self._load_gitignore_patterns()
+
+    def get_file_tree(self) -> Optional[FileTree]:
+        return self.file_tree
 
     def run(self) -> None:
         self.collect_file_tree()
@@ -52,7 +61,20 @@ class ProjectController:
             structure_only=self.structure_only
         )
         markdown_generator.generate_markdown(self.file_tree.structure, self.file_tree.get_all_files())
-        self.logger.info("Markdown generation completed.")
+        self.logger.info(f"Markdown generated at {self.output_file}.")
+
+    def generate_output_from_selected(self, selected_files: set) -> None:
+        self.logger.info("Generating markdown from selected files.")
+        # Build a pruned tree structure based on selected files
+        pruned_tree = self.file_tree.prune_tree(selected_files)
+        markdown_generator: MarkdownGenerator = MarkdownGenerator(
+            root_dir=self.root_dir,
+            output_file=self.output_file,
+            structure_only=False,
+            hide_untoggled=True
+        )
+        markdown_generator.generate_markdown(pruned_tree, [Path(f) for f in selected_files])
+        self.logger.info(f"Markdown generated at {self.output_file}.")
 
     def _load_gitignore_patterns(self) -> List[str]:
         gitignore_path: Path = self.root_dir / '.gitignore'

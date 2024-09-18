@@ -52,3 +52,27 @@ class FileTree:
                     filtered_subtree[key] = value
         return filtered_subtree
 
+    def prune_tree(self, selected_files: set) -> Dict[str, Any]:
+        """
+        Prunes the tree to include only the selected files and their directories.
+
+        Args:
+            selected_files (set): Set of selected file paths.
+
+        Returns:
+            Dict[str, Any]: Pruned tree structure.
+        """
+        return self._prune_tree(self.structure, selected_files)
+
+    def _prune_tree(self, subtree: Dict[str, Any], selected_files: set, path_prefix: str = '') -> Dict[str, Any]:
+        pruned_subtree: Dict[str, Any] = {}
+        for key, value in subtree.items():
+            current_path: str = f"{path_prefix}/{key}".lstrip('/')
+            if isinstance(value, dict):
+                pruned_value: Dict[str, Any] = self._prune_tree(value, selected_files, current_path)
+                if pruned_value:
+                    pruned_subtree[key] = pruned_value
+            else:
+                if current_path in selected_files:
+                    pruned_subtree[key] = value
+        return pruned_subtree
