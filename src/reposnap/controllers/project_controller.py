@@ -19,6 +19,8 @@ class ProjectController:
         self.args: object = args
         self.file_tree: Optional[FileTree] = None
         self.gitignore_patterns: List[str] = []
+        self.include_patterns: List[str] = args.include if args and hasattr(args, 'include') else []
+        self.exclude_patterns: List[str] = args.exclude if args and hasattr(args, 'exclude') else []
         if self.root_dir:
             self.gitignore_patterns = self._load_gitignore_patterns()
 
@@ -39,6 +41,30 @@ class ProjectController:
         git_repo: GitRepo = GitRepo(self.root_dir)
         git_files: List[Path] = git_repo.get_git_files()
         self.logger.debug(f"Git files before filtering: {git_files}")
+
+        # Adjust patterns
+        def adjust_patterns(patterns):
+            adjusted = []
+            for pattern in patterns:
+                if '*' in pattern or '?' in pattern or '[' in pattern:
+                    adjusted.append(pattern)
+                else:
+                    adjusted.append(f'*{pattern}*')
+            return adjusted
+
+        # Apply include patterns
+        if self.include_patterns:
+            adjusted_include_patterns = adjust_patterns(self.include_patterns)
+            include_spec = pathspec.PathSpec.from_lines(pathspec.patterns.GitWildMatchPattern, adjusted_include_patterns)
+            git_files = [f for f in git_files if include_spec.match_file(f.as_posix())]
+            self.logger.debug(f"Git files after include patterns: {git_files}")
+
+        # Apply exclude patterns
+        if self.exclude_patterns:
+            adjusted_exclude_patterns = adjust_patterns(self.exclude_patterns)
+            exclude_spec = pathspec.PathSpec.from_lines(pathspec.patterns.GitWildMatchPattern, adjusted_exclude_patterns)
+            git_files = [f for f in git_files if not exclude_spec.match_file(f.as_posix())]
+            self.logger.debug(f"Git files after exclude patterns: {git_files}")
 
         self.logger.info("Building tree structure.")
         file_system: FileSystem = FileSystem(self.root_dir)

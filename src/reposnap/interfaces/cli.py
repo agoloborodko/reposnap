@@ -13,6 +13,12 @@ def main():
                         help='Only include the file structure without content.')
     parser.add_argument('--debug', action='store_true', help='Enable debug-level logging.')
 
+    # New arguments for include and exclude patterns
+    parser.add_argument('-i', '--include', nargs='*', default=[],
+                        help='File/folder patterns to include.')
+    parser.add_argument('-e', '--exclude', nargs='*', default=[],
+                        help='File/folder patterns to exclude.')
+
     args = parser.parse_args()
 
     log_level = logging.DEBUG if args.debug else logging.INFO
@@ -20,6 +26,7 @@ def main():
 
     controller = ProjectController(args)
     controller.run()
+
 
 if __name__ == "__main__":
     main()

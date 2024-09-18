@@ -11,6 +11,7 @@
 - **Syntax Highlighting**: Includes syntax highlighting for known file types in the generated Markdown file.
 - **Structure Only Option**: The `--structure-only` flag can be used to generate the Markdown file with just the directory structure, omitting the contents of the files.
 - **Gitignore Support**: Automatically respects `.gitignore` patterns to exclude files and directories.
+- **Include and Exclude Patterns**: Use `--include` and `--exclude` to specify patterns for files and directories to include or exclude.
 
 ## Installation
 
@@ -35,7 +36,7 @@ pip install -r requirements.txt
 To use `reposnap` from the command line, run it with the following options:
 
 ```bash
-reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
+reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]] [-e EXCLUDE [EXCLUDE ...]] path
 ```
 
 - `path`: Path to the Git repository or subdirectory.
@@ -43,6 +44,19 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
 - `-o, --output`: The name of the output Markdown file. Defaults to `output.md`.
 - `--structure-only`: Generate a Markdown file that includes only the project structure, without file contents.
 - `--debug`: Enable debug-level logging.
+- `-i, --include`: File/folder patterns to include. For example, `-i "*.py"` includes only Python files.
+- `-e, --exclude`: File/folder patterns to exclude. For example, `-e "*.md"` excludes all Markdown files.
+
+#### Pattern Matching
+
+- **Pattern Interpretation**: Patterns follow gitignore-style syntax but with a twist.
+  - **Patterns without Wildcards**: If a pattern does not contain any wildcard characters (`*`, `?`, or `[`), it is treated as `*pattern*`. This means it will match any file or directory containing `pattern` in its name.
+  - **Patterns with Wildcards**: If a pattern contains wildcard characters, it retains its original behavior.
+
+- **Examples**:
+  - `-e "gui"`: Excludes any files or directories containing `"gui"` in their names.
+  - `-i "*.py"`: Includes only files ending with `.py`.
+  - `-e "*.test.*"`: Excludes files with `.test.` in their names.
 
 #### Examples
 
@@ -58,10 +72,22 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] path
     reposnap my_project/ --structure-only
     ```
 
-3. **Generate a Markdown file excluding certain files and directories**:
+3. **Generate a Markdown file including only Python files**:
 
     ```bash
-    reposnap my_project/ -o output.md
+    reposnap my_project/ -i "*.py"
+    ```
+
+4. **Generate a Markdown file excluding certain files and directories**:
+
+    ```bash
+    reposnap my_project/ -e "tests" -e "*.md"
+    ```
+
+5. **Exclude files and directories containing a substring**:
+
+    ```bash
+    reposnap my_project/ -e "gui"
     ```
 
 ### Graphical User Interface
