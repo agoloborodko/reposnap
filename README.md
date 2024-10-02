@@ -26,7 +26,7 @@ Alternatively, you can clone the repository and install the required dependencie
 ```bash
 git clone https://github.com/username/reposnap.git
 cd reposnap
-pip install -r requirements.txt
+pip install -r requirements.lock
 ```
 
 ## Usage
