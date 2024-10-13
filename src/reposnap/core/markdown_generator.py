@@ -58,7 +58,11 @@ class MarkdownGenerator:
                 self.logger.debug(f"File not found: {file_path}. Skipping.")
                 continue
 
-            self._write_file_content(file_path, relative_path.as_posix())
+            try:
+                self._write_file_content(file_path, relative_path.as_posix())
+            except UnicodeDecodeError as e:
+                self.logger.error(f"UnicodeDecodeError for file {file_path}: {e}")
+
 
     def _write_file_content(self, file_path: Path, relative_path: str) -> None:
         """
