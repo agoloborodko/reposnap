@@ -1,6 +1,6 @@
 [project]
 name = "reposnap"
-version = "0.5.0"
+version = "0.5.1"
 description = "Generate a Markdown file with all contents of your project"
 authors = [
     { name = "agoloborodko" }
