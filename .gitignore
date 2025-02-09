@@ -11,3 +11,4 @@ wheels/
 .idea
 output.md
 pytest.ini
+.envrc

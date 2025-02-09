@@ -14,6 +14,9 @@ def create_file(file_path: str, content: str = ''):
 
 
 def create_directory_structure(base_dir: str, structure: dict):
+    """
+    Recursively creates directories and files based on the provided structure.
+    """
     for name, content in structure.items():
         path = os.path.join(base_dir, name)
         if isinstance(content, dict):
@@ -26,8 +29,8 @@ def create_directory_structure(base_dir: str, structure: dict):
 def test_project_controller_includes_py_files():
     with tempfile.TemporaryDirectory() as temp_dir:
         gitignore_content = """
-        *.py[oc]
-        """
+*.py[oc]
+"""
         structure = {
             'src': {
                 'module': {
@@ -38,7 +41,6 @@ def test_project_controller_includes_py_files():
             },
             '.gitignore': gitignore_content,
         }
-
         create_directory_structure(temp_dir, structure)
 
         args = type('Args', (object,), {
@@ -48,57 +50,43 @@ def test_project_controller_includes_py_files():
             'debug': False
         })
 
-        with patch('reposnap.controllers.project_controller.GitRepo') as MockGitRepo:
-            mock_git_repo_instance = MockGitRepo.return_value
-            mock_git_repo_instance.get_git_files.return_value = [
-                Path('src/module/file1.py'),
-                Path('src/module/file2.py'),
-                Path('.gitignore')
-            ]
+        controller = ProjectController(args)
+        controller.run()
+
+        with open(args.output, 'r') as f:
+            output_content = f.read()
+
+        # Check that the contents of the Python files are included
+        assert 'print("File 1")' in output_content
+        assert 'print("File 2")' in output_content
+        # The .pyc file should be filtered out by .gitignore
+        assert 'Compiled code' not in output_content
+
+
+def test_project_controller_run():
+    # This test patches only MarkdownGenerator to verify that generate_markdown is called.
+    with tempfile.TemporaryDirectory() as temp_dir:
+        structure = {
+            'file1.txt': 'content',
+            'file2.py': 'print("hello")',
+        }
+        create_directory_structure(temp_dir, structure)
+        args = type('Args', (object,), {
+            'path': temp_dir,
+            'output': os.path.join(temp_dir, 'output.md'),
+            'structure_only': False,
+            'debug': False,
+            'include': [],
+            'exclude': []
+        })
+        with patch('reposnap.controllers.project_controller.MarkdownGenerator') as MockMarkdownGenerator:
+            mock_instance = MagicMock()
+            MockMarkdownGenerator.return_value = mock_instance
 
             controller = ProjectController(args)
             controller.run()
 
-        # Read the output file
-        with open(args.output, 'r') as f:
-            output_content = f.read()
-
-        # Check that contents of .py files are included
-        assert 'print("File 1")' in output_content
-        assert 'print("File 2")' in output_content
-        # .pyc files should be ignored
-        assert 'Compiled code' not in output_content
-
-
-@patch('reposnap.controllers.project_controller.MarkdownGenerator')
-@patch('reposnap.controllers.project_controller.FileSystem')
-@patch('reposnap.controllers.project_controller.GitRepo')
-def test_project_controller_run(mock_git_repo, mock_file_system, mock_markdown_generator):
-    # Setup mocks
-    mock_git_repo_instance = MagicMock()
-    mock_file_system_instance = MagicMock()
-    mock_markdown_generator_instance = MagicMock()
-
-    mock_git_repo.return_value = mock_git_repo_instance
-    mock_file_system.return_value = mock_file_system_instance
-    mock_markdown_generator.return_value = mock_markdown_generator_instance
-
-    # Use Path objects instead of strings
-    mock_git_repo_instance.get_git_files.return_value = [Path('file1.py'), Path('file2.py')]
-    mock_file_system_instance.build_tree_structure.return_value = {'dir': {'file1.py': 'file1.py'}}
-
-    args = MagicMock()
-    args.path = 'root_dir'
-    args.output = 'output.md'
-    args.structure_only = False
-    args.include = []
-    args.exclude = []
-    args.debug = False  # Add if necessary
-
-    controller = ProjectController(args)
-    controller.run()
-
-    mock_markdown_generator_instance.generate_markdown.assert_called_once()
+            mock_instance.generate_markdown.assert_called_once()
 
 
 def test_include_pattern():
@@ -118,9 +106,7 @@ def test_include_pattern():
             'setup.py': 'setup code',
             'notes.txt': 'Some notes',
         }
-
         create_directory_structure(temp_dir, structure)
-
         args = type('Args', (object,), {
             'path': temp_dir,
             'output': os.path.join(temp_dir, 'output.md'),
@@ -129,25 +115,10 @@ def test_include_pattern():
             'include': ['*.py'],
             'exclude': []
         })
+        controller = ProjectController(args)
+        controller.collect_file_tree()
 
-        # Mock the GitRepo class
-        with patch('reposnap.controllers.project_controller.GitRepo') as MockGitRepo:
-            mock_git_repo_instance = MockGitRepo.return_value
-
-            # Collect all files under temp_dir
-            all_files = []
-            for root, dirs, files in os.walk(temp_dir):
-                for name in files:
-                    file_path = Path(root) / name
-                    rel_path = file_path.relative_to(temp_dir)
-                    all_files.append(rel_path)
-
-            mock_git_repo_instance.get_git_files.return_value = all_files
-
-            controller = ProjectController(args)
-            controller.collect_file_tree()
-
-        # Get the list of files included in the tree
+        # Traverse the merged tree and collect file paths.
         included_files = []
 
         def traverse(tree, path=''):
@@ -165,7 +136,6 @@ def test_include_pattern():
             os.path.join('src', 'module', 'submodule', 'file3.py'),
             'setup.py',
         ]
-
         assert sorted(included_files) == sorted(expected_files)
 
 
@@ -186,9 +156,7 @@ def test_exclude_pattern():
             'setup.py': 'setup code',
             'notes.txt': 'Some notes',
         }
-
         create_directory_structure(temp_dir, structure)
-
         args = type('Args', (object,), {
             'path': temp_dir,
             'output': os.path.join(temp_dir, 'output.md'),
@@ -197,22 +165,8 @@ def test_exclude_pattern():
             'include': [],
             'exclude': ['*.md', '*.txt']
         })
-
-        with patch('reposnap.controllers.project_controller.GitRepo') as MockGitRepo:
-            mock_git_repo_instance = MockGitRepo.return_value
-
-            # Collect all files under temp_dir
-            all_files = []
-            for root, dirs, files in os.walk(temp_dir):
-                for name in files:
-                    file_path = Path(root) / name
-                    rel_path = file_path.relative_to(temp_dir)
-                    all_files.append(rel_path)
-
-            mock_git_repo_instance.get_git_files.return_value = all_files
-
-            controller = ProjectController(args)
-            controller.collect_file_tree()
+        controller = ProjectController(args)
+        controller.collect_file_tree()
 
         included_files = []
 
@@ -231,7 +185,6 @@ def test_exclude_pattern():
             os.path.join('src', 'module', 'submodule', 'file3.py'),
             'setup.py',
         ]
-
         assert sorted(included_files) == sorted(expected_files)
 
 
@@ -255,9 +208,7 @@ def test_include_and_exclude_patterns():
             'setup.py': 'setup code',
             'notes.txt': 'Some notes',
         }
-
         create_directory_structure(temp_dir, structure)
-
         args = type('Args', (object,), {
             'path': temp_dir,
             'output': os.path.join(temp_dir, 'output.md'),
@@ -266,41 +217,95 @@ def test_include_and_exclude_patterns():
             'include': ['*foo*'],
             'exclude': ['*submodule*']
         })
+        controller = ProjectController(args)
+        controller.collect_file_tree()
 
-        with patch('reposnap.controllers.project_controller.GitRepo') as MockGitRepo:
-            mock_git_repo_instance = MockGitRepo.return_value
-
-            # Collect all files under temp_dir
-            all_files = []
-            for root, dirs, files in os.walk(temp_dir):
-                for name in files:
-                    file_path = Path(root) / name
-                    rel_path = file_path.relative_to(temp_dir)
-                    all_files.append(rel_path)
-
-            mock_git_repo_instance.get_git_files.return_value = all_files
-
-            controller = ProjectController(args)
-            controller.collect_file_tree()
-
-        included_files = []
+        collected = []
 
         def traverse(tree, path=''):
             for name, node in tree.items():
                 current_path = os.path.join(path, name)
                 if isinstance(node, dict):
-                    included_files.append(current_path)
+                    collected.append(current_path)
                     traverse(node, current_path)
                 else:
-                    included_files.append(current_path)
+                    collected.append(current_path)
 
         traverse(controller.file_tree.structure)
-
-        expected_files = [
+        expected = [
             os.path.join('src'),
             os.path.join('src', 'foo_module'),
             os.path.join('src', 'foo_module', 'foo_file1.py'),
-            os.path.join('src', 'foo_module', 'file2.py'),  # Include this file
+            os.path.join('src', 'foo_module', 'file2.py'),
         ]
+        assert sorted(collected) == sorted(expected)
 
-        assert sorted(included_files) == sorted(expected_files)
+
+def test_project_controller_multiple_paths():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Define a structure similar to the provided example.
+        structure = {
+            'README.md': 'Project README content',
+            'pyproject.toml': 'project configuration',
+            'LICENSE': 'MIT License',
+            'src': {
+                'reposnap': {
+                    '__init__.py': '',
+                    'controllers': {
+                        '__init__.py': '',
+                        'project_controller.py': 'print("controller")',
+                    },
+                    'core': {
+                        '__init__.py': '',
+                        'file_system.py': 'print("filesystem")',
+                        'git_repo.py': 'print("git")',
+                        'markdown_generator.py': 'print("markdown")',
+                    },
+                    'interfaces': {
+                        '__init__.py': '',
+                        'cli.py': 'print("cli")',
+                        'gui.py': 'print("gui")',
+                    },
+                    'models': {
+                        '__init__.py': '',
+                        'file_tree.py': 'print("file tree")',
+                    },
+                    'utils': {
+                        '__init__.py': '',
+                        'path_utils.py': 'print("path utils")',
+                    },
+                },
+            },
+            'tests': {
+                '__init__.py': '',
+                'some_test.py': 'print("test")'
+            },
+            'extras': {
+                'notes.txt': 'Some notes'
+            }
+        }
+        create_directory_structure(temp_dir, structure)
+
+        # Create args with multiple paths.
+        args = type('Args', (object,), {
+            'paths': ['README.md', 'src', 'pyproject.toml'],
+            'output': os.path.join(temp_dir, 'output.md'),
+            'structure_only': True,
+            'debug': False,
+            'include': [],
+            'exclude': []
+        })
+        # Patch _get_repo_root to return our temp_dir.
+        with patch('reposnap.controllers.project_controller.ProjectController._get_repo_root', return_value=Path(temp_dir)):
+            controller = ProjectController(args)
+            controller.collect_file_tree()
+
+        tree = controller.file_tree.structure
+        # The merged tree should only include keys for the provided paths.
+        assert 'README.md' in tree
+        assert 'pyproject.toml' in tree
+        assert 'src' in tree
+        # Keys that are not part of the requested paths (like LICENSE, tests, extras) should be absent.
+        assert 'LICENSE' not in tree
+        assert 'tests' not in tree
+        assert 'extras' not in tree

@@ -1,10 +1,10 @@
 [project]
 name = "reposnap"
-version = "0.5.1"
 description = "Generate a Markdown file with all contents of your project"
 authors = [
     { name = "agoloborodko" }
 ]
+dynamic = ["version"]
 dependencies = [
     "pathlib>=1.0.1",
     "pathspec>=0.12.1",
@@ -15,7 +15,7 @@ readme = "README.md"
 requires-python = ">= 3.8"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.rye]
@@ -29,6 +29,9 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/reposnap"]
+
+[tool.hatch.version]
+source = "vcs"
 
 [project.scripts]
 reposnap = "reposnap.interfaces.cli:main"

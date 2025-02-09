@@ -36,10 +36,10 @@ pip install -r requirements.lock
 To use `reposnap` from the command line, run it with the following options:
 
 ```bash
-reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]] [-e EXCLUDE [EXCLUDE ...]] path
+reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]] [-e EXCLUDE [EXCLUDE ...]] paths [paths ...]
 ```
 
-- `path`: Path to the Git repository or subdirectory.
+- `paths`: One or more paths (files or directories) within the repository whose content and structure should be rendered.
 - `-h, --help`: Show help message and exit.
 - `-o, --output`: The name of the output Markdown file. Defaults to `output.md`.
 - `--structure-only`: Generate a Markdown file that includes only the project structure, without file contents.
@@ -81,7 +81,7 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]
 4. **Generate a Markdown file excluding certain files and directories**:
 
     ```bash
-    reposnap my_project/ -e "tests" -e "*.md"
+    reposnap my_project_folder my_project_folder_2 -e "tests" -e "*.md"
     ```
 
 5. **Exclude files and directories containing a substring**:
