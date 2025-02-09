@@ -32,6 +32,7 @@ packages = ["src/reposnap"]
 
 [tool.hatch.version]
 source = "vcs"
+tag_prefix = ""
 
 [project.scripts]
 reposnap = "reposnap.interfaces.cli:main"
