@@ -48,7 +48,8 @@ class FileTree:
                 if filtered_value:
                     filtered_subtree[key] = filtered_value
             else:
-                if not spec.match_file(current_path):
+                # Exclude the file if either the full path OR its basename matches a .gitignore pattern.
+                if not spec.match_file(current_path) and not spec.match_file(Path(current_path).name):
                     filtered_subtree[key] = value
         return filtered_subtree
 

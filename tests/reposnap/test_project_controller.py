@@ -49,9 +49,10 @@ def test_project_controller_includes_py_files():
             'structure_only': False,
             'debug': False
         })
-
-        controller = ProjectController(args)
-        controller.run()
+        # Force repository root to be our temporary directory.
+        with patch('reposnap.controllers.project_controller.ProjectController._get_repo_root', return_value=Path(temp_dir)):
+            controller = ProjectController(args)
+            controller.run()
 
         with open(args.output, 'r') as f:
             output_content = f.read()
@@ -64,7 +65,6 @@ def test_project_controller_includes_py_files():
 
 
 def test_project_controller_run():
-    # This test patches only MarkdownGenerator to verify that generate_markdown is called.
     with tempfile.TemporaryDirectory() as temp_dir:
         structure = {
             'file1.txt': 'content',
@@ -79,14 +79,17 @@ def test_project_controller_run():
             'include': [],
             'exclude': []
         })
-        with patch('reposnap.controllers.project_controller.MarkdownGenerator') as MockMarkdownGenerator:
-            mock_instance = MagicMock()
-            MockMarkdownGenerator.return_value = mock_instance
+        # Patch _get_repo_root to force temp_dir as repo root.
+        with patch('reposnap.controllers.project_controller.ProjectController._get_repo_root', return_value=Path(temp_dir)):
+            # Patch the MarkdownGenerator in its actual module.
+            with patch('reposnap.core.markdown_generator.MarkdownGenerator') as MockMarkdownGenerator:
+                mock_instance = MagicMock()
+                MockMarkdownGenerator.return_value = mock_instance
 
-            controller = ProjectController(args)
-            controller.run()
+                controller = ProjectController(args)
+                controller.run()
 
-            mock_instance.generate_markdown.assert_called_once()
+                mock_instance.generate_markdown.assert_called_once()
 
 
 def test_include_pattern():
@@ -115,8 +118,9 @@ def test_include_pattern():
             'include': ['*.py'],
             'exclude': []
         })
-        controller = ProjectController(args)
-        controller.collect_file_tree()
+        with patch('reposnap.controllers.project_controller.ProjectController._get_repo_root', return_value=Path(temp_dir)):
+            controller = ProjectController(args)
+            controller.collect_file_tree()
 
         # Traverse the merged tree and collect file paths.
         included_files = []
@@ -165,11 +169,10 @@ def test_exclude_pattern():
             'include': [],
             'exclude': ['*.md', '*.txt']
         })
-        controller = ProjectController(args)
-        controller.collect_file_tree()
-
+        with patch('reposnap.controllers.project_controller.ProjectController._get_repo_root', return_value=Path(temp_dir)):
+            controller = ProjectController(args)
+            controller.collect_file_tree()
         included_files = []
-
         def traverse(tree, path=''):
             for name, node in tree.items():
                 current_path = os.path.join(path, name)
@@ -177,16 +180,13 @@ def test_exclude_pattern():
                     traverse(node, current_path)
                 else:
                     included_files.append(current_path)
-
         traverse(controller.file_tree.structure)
-
         expected_files = [
             os.path.join('src', 'module', 'file1.py'),
             os.path.join('src', 'module', 'submodule', 'file3.py'),
             'setup.py',
         ]
         assert sorted(included_files) == sorted(expected_files)
-
 
 def test_include_and_exclude_patterns():
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -217,11 +217,10 @@ def test_include_and_exclude_patterns():
             'include': ['*foo*'],
             'exclude': ['*submodule*']
         })
-        controller = ProjectController(args)
-        controller.collect_file_tree()
-
+        with patch('reposnap.controllers.project_controller.ProjectController._get_repo_root', return_value=Path(temp_dir)):
+            controller = ProjectController(args)
+            controller.collect_file_tree()
         collected = []
-
         def traverse(tree, path=''):
             for name, node in tree.items():
                 current_path = os.path.join(path, name)
@@ -230,7 +229,6 @@ def test_include_and_exclude_patterns():
                     traverse(node, current_path)
                 else:
                     collected.append(current_path)
-
         traverse(controller.file_tree.structure)
         expected = [
             os.path.join('src'),
