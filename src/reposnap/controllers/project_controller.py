@@ -1,9 +1,6 @@
-# src/reposnap/controllers/project_controller.py
-
 import logging
 from pathlib import Path
 from reposnap.core.file_system import FileSystem
-from reposnap.core.markdown_generator import MarkdownGenerator
 from reposnap.models.file_tree import FileTree
 import pathspec
 from typing import List, Optional
@@ -11,35 +8,33 @@ from typing import List, Optional
 class ProjectController:
     def __init__(self, args: Optional[object] = None):
         self.logger = logging.getLogger(__name__)
+        # Always determine repository root using Git (or cwd)
+        self.root_dir = self._get_repo_root().resolve()
         if args:
-            # Support both new 'paths' (multiple paths) and legacy 'path'
-            if hasattr(args, 'paths'):
-                input_paths = [Path(p) for p in args.paths]
-            else:
-                input_paths = [Path(args.path)]
             self.args = args
-            # Determine repository root (using provided paths’ common parent if available)
-            self.root_dir = self._get_repo_root().resolve()
-            # Convert provided paths to be relative to the repository root.
+            # Treat positional arguments as literal file/directory names.
+            input_paths = [Path(p) for p in (args.paths if hasattr(args, 'paths') else [args.path])]
             self.input_paths = []
             for p in input_paths:
-                try:
-                    candidate = (self.root_dir / p).resolve()
-                    rel = candidate.relative_to(self.root_dir)
-                    if rel != Path('.'):
-                        self.input_paths.append(rel)
-                except ValueError:
-                    self.logger.warning(f"Path {p} is not under repository root {self.root_dir}. Ignoring.")
+                candidate = (self.root_dir / p).resolve()
+                if candidate.exists():
+                    try:
+                        rel = candidate.relative_to(self.root_dir)
+                        if rel != Path('.'):
+                            self.input_paths.append(rel)
+                    except ValueError:
+                        self.logger.warning(f"Path {p} is not under repository root {self.root_dir}. Ignoring.")
+                else:
+                    self.logger.warning(f"Path {p} does not exist relative to repository root {self.root_dir}.")
             self.output_file: Path = Path(args.output).resolve() if args.output else self.root_dir / 'output.md'
             self.structure_only: bool = args.structure_only if hasattr(args, 'structure_only') else False
             self.include_patterns: List[str] = args.include if hasattr(args, 'include') else []
             self.exclude_patterns: List[str] = args.exclude if hasattr(args, 'exclude') else []
         else:
-            self.root_dir = Path('.').resolve()
-            self.input_paths = []
-            self.output_file = Path('output.md').resolve()
-            self.structure_only = False
             self.args = None
+            self.input_paths = []
+            self.output_file = self.root_dir / 'output.md'
+            self.structure_only = False
             self.include_patterns = []
             self.exclude_patterns = []
         self.file_tree: Optional[FileTree] = None
@@ -49,25 +44,9 @@ class ProjectController:
 
     def _get_repo_root(self) -> Path:
         """
-        Determine the repository root. If arguments were provided and those paths exist,
-        use the common parent directory of all provided paths. Otherwise, fall back to the
-        git repository working tree directory (or current directory if not a git repo).
+        Determine the repository root using Git if available,
+        otherwise use the current directory.
         """
-        if self.args is not None:
-            candidate_paths = []
-            if hasattr(self.args, 'paths'):
-                for p in self.args.paths:
-                    candidate = Path(p).resolve()
-                    if candidate.exists():
-                        candidate_paths.append(candidate)
-            elif hasattr(self.args, 'path'):
-                candidate = Path(self.args.path).resolve()
-                if candidate.exists():
-                    candidate_paths.append(candidate)
-            if candidate_paths:
-                from os.path import commonpath
-                common = Path(commonpath([str(p) for p in candidate_paths]))
-                return common
         from git import Repo, InvalidGitRepositoryError
         try:
             repo = Repo(Path.cwd(), search_parent_directories=True)
@@ -104,25 +83,33 @@ class ProjectController:
         return files
 
     def collect_file_tree(self) -> None:
-        self.logger.info("Collecting files by walking the repository root.")
-        all_files = []
-        for path in self.root_dir.rglob("*"):
-            if path.is_file():
-                try:
-                    rel = path.relative_to(self.root_dir)
-                    all_files.append(rel)
-                except ValueError:
-                    continue
-        # Apply include/exclude filtering.
+        self.logger.info("Collecting files from Git tracked files if available.")
+        try:
+            from reposnap.core.git_repo import GitRepo
+            git_repo = GitRepo(self.root_dir)
+            all_files = git_repo.get_git_files()
+            self.logger.debug(f"Git tracked files: {all_files}")
+        except Exception as e:
+            self.logger.warning(f"Error obtaining Git tracked files: {e}.")
+            all_files = []
+        # If Git returns an empty list but files exist on disk, fall back to filesystem scan.
+        if not all_files:
+            file_list = [p for p in self.root_dir.rglob("*") if p.is_file()]
+            if file_list:
+                self.logger.info("Git tracked files empty, using filesystem scan fallback.")
+                all_files = []
+                for path in file_list:
+                    try:
+                        rel = path.relative_to(self.root_dir)
+                        all_files.append(rel)
+                    except ValueError:
+                        continue
         all_files = self._apply_include_exclude(all_files)
-        self.logger.debug(f"All files after include/exclude filtering: {all_files}")
+        self.logger.debug(f"All files after applying include/exclude: {all_files}")
         if self.input_paths:
             trees = []
             for input_path in self.input_paths:
-                subset = [
-                    f for f in all_files
-                    if f == input_path or f.parts[:len(input_path.parts)] == input_path.parts
-                ]
+                subset = [f for f in all_files if f == input_path or list(f.parts[:len(input_path.parts)]) == list(input_path.parts)]
                 self.logger.debug(f"Files for input path '{input_path}': {subset}")
                 if subset:
                     tree = FileSystem(self.root_dir).build_tree_structure(subset)
@@ -164,6 +151,7 @@ class ProjectController:
 
     def generate_output(self) -> None:
         self.logger.info("Starting Markdown generation.")
+        from reposnap.core.markdown_generator import MarkdownGenerator
         markdown_generator = MarkdownGenerator(
             root_dir=self.root_dir,
             output_file=self.output_file,
@@ -175,6 +163,7 @@ class ProjectController:
     def generate_output_from_selected(self, selected_files: set) -> None:
         self.logger.info("Generating Markdown from selected files.")
         pruned_tree = self.file_tree.prune_tree(selected_files)
+        from reposnap.core.markdown_generator import MarkdownGenerator
         markdown_generator = MarkdownGenerator(
             root_dir=self.root_dir,
             output_file=self.output_file,
@@ -194,14 +183,15 @@ class ProjectController:
         gitignore_path = self.root_dir / '.gitignore'
         if not gitignore_path.exists():
             for parent in self.root_dir.parents:
-                gitignore_path = parent / '.gitignore'
-                if gitignore_path.exists():
+                candidate = parent / '.gitignore'
+                if candidate.exists():
+                    gitignore_path = candidate
                     break
             else:
                 gitignore_path = None
         if gitignore_path and gitignore_path.exists():
             with gitignore_path.open('r') as gitignore:
-                patterns = gitignore.readlines()
+                patterns = [line.strip() for line in gitignore if line.strip() and not line.strip().startswith('#')]
             self.logger.debug(f"Loaded .gitignore patterns from {gitignore_path.parent}: {patterns}")
             return patterns
         else:

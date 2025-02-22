@@ -12,3 +12,6 @@ wheels/
 output.md
 pytest.ini
 .envrc
+
+# pytest
+.pytest_cache/

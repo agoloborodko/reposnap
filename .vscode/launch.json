@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Run reposnap",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "reposnap.interfaces.cli",
+            "console": "integratedTerminal",
+            "args": ["src/reposnap/controllers", "src/reposnap/interfaces", "README.md", "tests/reposnap"]
+        }
+    ]
+}
