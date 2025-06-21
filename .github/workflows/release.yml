@@ -29,7 +29,8 @@ jobs:
 
       - run: |
           rye sync
-          rye build --clean                     # produces dist/*
+          rye build --clean                 # produces dist/*.whl  +  dist/*.tar.gz
+          python -m ensurepip --upgrade     # <- adds pip to this venv
           python -m pip install --upgrade --no-cache-dir twine
           twine check dist/*
 
