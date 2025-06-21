@@ -15,7 +15,7 @@ class ProjectController:
             self.args = args
             # Treat positional arguments as literal file/directory names.
             input_paths = [
-                Path(p) for p in (args.paths if hasattr(args, "paths") else [args.path])
+                Path(p) for p in (args.paths if hasattr(args, "paths") else [])
             ]
             self.input_paths = []
             for p in input_paths:
@@ -47,6 +47,7 @@ class ProjectController:
             self.exclude_patterns: List[str] = (
                 args.exclude if hasattr(args, "exclude") else []
             )
+            self.changes_only: bool = getattr(args, "changes", False)
         else:
             self.args = None
             self.input_paths = []
@@ -54,6 +55,7 @@ class ProjectController:
             self.structure_only = False
             self.include_patterns = []
             self.exclude_patterns = []
+            self.changes_only = False
         self.file_tree: Optional[FileTree] = None
         self.gitignore_patterns: List[str] = []
         if self.root_dir:
@@ -109,13 +111,23 @@ class ProjectController:
         return files
 
     def collect_file_tree(self) -> None:
-        self.logger.info("Collecting files from Git tracked files if available.")
+        if self.changes_only:
+            self.logger.info("Collecting uncommitted files from Git repository.")
+        else:
+            self.logger.info("Collecting files from Git tracked files if available.")
         try:
             from reposnap.core.git_repo import GitRepo
 
             git_repo = GitRepo(self.root_dir)
-            all_files = git_repo.get_git_files()
-            self.logger.debug(f"Git tracked files: {all_files}")
+            if self.changes_only:
+                all_files = git_repo.get_uncommitted_files()
+                self.logger.info(
+                    "Using only uncommitted files (staged, unstaged, untracked, stashed)."
+                )
+            else:
+                all_files = git_repo.get_git_files()
+                self.logger.info("Using all Git tracked files.")
+            self.logger.debug(f"Git files: {all_files}")
         except Exception as e:
             self.logger.warning(f"Error obtaining Git tracked files: {e}.")
             all_files = []

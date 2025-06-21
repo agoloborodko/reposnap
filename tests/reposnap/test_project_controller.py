@@ -350,3 +350,82 @@ def test_project_controller_multiple_paths():
         assert "LICENSE" not in tree
         assert "tests" not in tree
         assert "extras" not in tree
+
+
+def test_project_controller_changes_only():
+    """Test that changes_only flag calls get_uncommitted_files instead of get_git_files."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        structure = {
+            "file1.py": 'print("File 1")',
+            "file2.py": 'print("File 2")',
+        }
+        create_directory_structure(temp_dir, structure)
+        args = type(
+            "Args",
+            (object,),
+            {
+                "paths": [temp_dir],
+                "output": os.path.join(temp_dir, "output.md"),
+                "structure_only": False,
+                "debug": False,
+                "include": [],
+                "exclude": [],
+                "changes": True,
+            },
+        )
+        with patch(
+            "reposnap.controllers.project_controller.ProjectController._get_repo_root",
+            return_value=Path(temp_dir),
+        ):
+            with patch("reposnap.core.git_repo.GitRepo") as MockGitRepo:
+                mock_git_repo = MagicMock()
+                mock_git_repo.get_uncommitted_files.return_value = [Path("file1.py")]
+                MockGitRepo.return_value = mock_git_repo
+
+                controller = ProjectController(args)
+                controller.collect_file_tree()
+
+                # Verify get_uncommitted_files was called instead of get_git_files
+                mock_git_repo.get_uncommitted_files.assert_called_once()
+                mock_git_repo.get_git_files.assert_not_called()
+
+
+def test_project_controller_changes_only_false():
+    """Test that when changes_only is False, get_git_files is called."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        structure = {
+            "file1.py": 'print("File 1")',
+            "file2.py": 'print("File 2")',
+        }
+        create_directory_structure(temp_dir, structure)
+        args = type(
+            "Args",
+            (object,),
+            {
+                "paths": [temp_dir],
+                "output": os.path.join(temp_dir, "output.md"),
+                "structure_only": False,
+                "debug": False,
+                "include": [],
+                "exclude": [],
+                "changes": False,
+            },
+        )
+        with patch(
+            "reposnap.controllers.project_controller.ProjectController._get_repo_root",
+            return_value=Path(temp_dir),
+        ):
+            with patch("reposnap.core.git_repo.GitRepo") as MockGitRepo:
+                mock_git_repo = MagicMock()
+                mock_git_repo.get_git_files.return_value = [
+                    Path("file1.py"),
+                    Path("file2.py"),
+                ]
+                MockGitRepo.return_value = mock_git_repo
+
+                controller = ProjectController(args)
+                controller.collect_file_tree()
+
+                # Verify get_git_files was called instead of get_uncommitted_files
+                mock_git_repo.get_git_files.assert_called_once()
+                mock_git_repo.get_uncommitted_files.assert_not_called()

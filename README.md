@@ -12,6 +12,7 @@
 - **Structure Only Option**: The `--structure-only` flag can be used to generate the Markdown file with just the directory structure, omitting the contents of the files.
 - **Gitignore Support**: Automatically respects `.gitignore` patterns to exclude files and directories.
 - **Include and Exclude Patterns**: Use `--include` and `--exclude` to specify patterns for files and directories to include or exclude.
+- **Changes Only Mode**: Use `-c` or `--changes` to snapshot only uncommitted files (staged, unstaged, untracked, and stashed changes).
 
 ## Installation
 
@@ -36,7 +37,7 @@ pip install -r requirements.lock
 To use `reposnap` from the command line, run it with the following options:
 
 ```bash
-reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]] [-e EXCLUDE [EXCLUDE ...]] paths [paths ...]
+reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]] [-e EXCLUDE [EXCLUDE ...]] [-c] paths [paths ...]
 ```
 
 - `paths`: One or more paths (files or directories) within the repository whose content and structure should be rendered.
@@ -46,6 +47,7 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]
 - `--debug`: Enable debug-level logging.
 - `-i, --include`: File/folder patterns to include. For example, `-i "*.py"` includes only Python files.
 - `-e, --exclude`: File/folder patterns to exclude. For example, `-e "*.md"` excludes all Markdown files.
+- `-c, --changes`: Use only files that are added/modified/untracked/stashed but not yet committed.
 
 #### Pattern Matching
 
@@ -57,6 +59,42 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]
   - `-e "gui"`: Excludes any files or directories containing `"gui"` in their names.
   - `-i "*.py"`: Includes only files ending with `.py`.
   - `-e "*.test.*"`: Excludes files with `.test.` in their names.
+
+#### Only Snapshot Your Current Work
+
+The `-c` or `--changes` flag allows you to generate documentation for only the files that have been modified but not yet committed. This includes:
+
+- **Staged changes**: Files that have been added to the index with `git add`
+- **Unstaged changes**: Files that have been modified but not yet staged
+- **Untracked files**: New files that haven't been added to Git yet
+- **Stashed changes**: Files that are stored in Git stash entries
+
+This is particularly useful when you want to:
+- Document only your current work-in-progress
+- Create a snapshot of changes before committing
+- Review what files you've been working on
+
+**Examples**:
+
+1. **Generate documentation for only your uncommitted changes**:
+    ```bash
+    reposnap . -c
+    ```
+
+2. **Combine with structure-only for a quick overview**:
+    ```bash
+    reposnap . -c --structure-only
+    ```
+
+3. **Filter uncommitted changes by file type**:
+    ```bash
+    reposnap . -c -i "*.py"
+    ```
+
+4. **Exclude test files from uncommitted changes**:
+    ```bash
+    reposnap . -c -e "*test*"
+    ```
 
 #### Examples
 
@@ -88,6 +126,12 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]
 
     ```bash
     reposnap my_project/ -e "gui"
+    ```
+
+6. **Document only your current uncommitted work**:
+
+    ```bash
+    reposnap . -c
     ```
 
 ### Graphical User Interface
