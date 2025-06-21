@@ -47,6 +47,5 @@ jobs:
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
           repository-url: ${{ steps.repository.outputs.index_url }}
           skip-existing: true          # idempotent re-runs :contentReference[oaicite:4]{index=4}
