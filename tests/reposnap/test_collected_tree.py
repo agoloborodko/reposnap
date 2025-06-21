@@ -3,7 +3,6 @@
 import os
 import tempfile
 from pathlib import Path
-import pytest
 from reposnap.controllers.project_controller import ProjectController
 from unittest.mock import patch
 
