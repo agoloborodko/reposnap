@@ -1,6 +1,5 @@
 # tests/reposnap/test_git_repo.py
 
-import pytest
 from unittest.mock import patch, MagicMock
 from reposnap.core.git_repo import GitRepo
 from pathlib import Path

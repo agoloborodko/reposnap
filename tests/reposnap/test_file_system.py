@@ -1,7 +1,6 @@
 # tests/reposnap/test_file_system.py
 
 import pytest
-from pathlib import Path
 from reposnap.core.file_system import FileSystem
 
 
@@ -46,5 +45,5 @@ def test_relative_path_resolution(file_system, tmp_path):
     tree_structure = file_system.build_tree_structure(git_files)
 
     # Check if .gitignore was correctly resolved relative to the root directory
-    expected_path = '.gitignore'
-    assert '.gitignore' in tree_structure, "'.gitignore' not found in tree_structure"
+    expected_path = ".gitignore"
+    assert expected_path in tree_structure, f"{expected_path} not found in tree_structure"

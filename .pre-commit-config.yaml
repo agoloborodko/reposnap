@@ -1,0 +1,47 @@
+# Pre‑commit configuration for **RepoSnap**
+# Install hooks with:
+#   rye add --dev pre-commit
+#   pre-commit install
+#
+# Hooks are kept minimal and fast; they rely on Rye’s built‑in commands.
+
+repos:
+  # Generic housekeeping hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  # Project‑specific commands driven by Rye
+  - repo: local
+    hooks:
+      # - id: rye-fmt
+      #   name: rye fmt --check
+      #   entry: rye
+      #   language: system
+      #   args: ["fmt", "--check"]
+      #   pass_filenames: false
+
+      - id: rye-lint
+        name: rye lint
+        entry: rye
+        language: system
+        args: ["lint"]
+        pass_filenames: false
+
+      - id: pytest
+        name: pytest (quick)
+        entry: pytest
+        language: system
+        args: ["-q"]
+        pass_filenames: false
+        always_run: true
+        # Skip if only docs/markdown changed
+        files: "^(src/|tests/)"
+
+# Run hooks only on commit; skip CI or manual stages unless invoked.
+default_stages: [commit]

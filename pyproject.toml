@@ -22,13 +22,19 @@ build-backend = "hatchling.build"
 managed = true
 dev-dependencies = [
     "pytest>=8.3.2",
+    "pre-commit>=4.2.0",
 ]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.build]
+sources = ["src"]
+dev-mode-dirs = ["src"]
+
 [tool.hatch.build.targets.wheel]
-packages = ["src/reposnap"]
+packages = ["reposnap"]
+include = ["reposnap"]
 
 [project.scripts]
 reposnap = "reposnap.interfaces.cli:main"

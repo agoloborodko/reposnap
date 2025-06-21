@@ -1,0 +1,32 @@
+name: CI (Rye)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Rye
+      uses: eifinger/setup-rye@v4
+      with:
+        enable-cache: true
+
+    - name: Sync dependencies & install package
+      run: |
+        rye sync
+
+    - name: Lint
+      run: |
+        rye lint
+
+    - name: Test
+      run: |
+        rye test

@@ -1,6 +1,5 @@
 # tests/reposnap/test_project_controller.py
 
-import pytest
 import tempfile
 import os
 from pathlib import Path

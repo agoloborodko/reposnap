@@ -1,8 +1,6 @@
 # tests/reposnap/test_file_tree.py
 
-import pytest
 from reposnap.models.file_tree import FileTree
-from pathlib import Path
 import pathspec
 
 
