@@ -1,0 +1,52 @@
+name: Release to PyPI
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'     # any SemVer tag, eg v1.2.3 or v1.2.3-rc.1
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    # Block publication unless the normal CI passed on this commit
+    needs: build                     # <— refers to the existing job id in python-package.yml
+
+    permissions:
+      contents: read                 # principle of least privilege
+      id-token: write                # enable OIDC if you switch to trusted publishing later :contentReference[oaicite:1]{index=1}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rye
+        uses: eifinger/setup-rye@v4
+        with:
+          enable-cache: true
+
+      - name: Build wheel & sdist
+        run: |
+          rye sync
+          rye build --clean           # Hatchling is the backend; Rye shells out to it :contentReference[oaicite:2]{index=2}
+
+      - name: Verify metadata (optional)
+        run: |
+          rye run -e 'twine>=5' twine check dist/* :contentReference[oaicite:3]{index=3}
+
+      # Select real PyPI vs TestPyPI
+      - name: Set target repository
+        id: repository
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *"-"* ]]; then
+            echo "index_url=https://test.pypi.org/legacy/" >> "$GITHUB_OUTPUT"
+          else
+            echo "index_url=https://upload.pypi.org/legacy/" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          repository-url: ${{ steps.repository.outputs.index_url }}
+          skip-existing: true          # idempotent re-runs :contentReference[oaicite:4]{index=4}
