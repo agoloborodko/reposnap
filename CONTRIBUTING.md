@@ -134,7 +134,7 @@ At least one core maintainer must approve before merging. We use **Squash & Me
 ## Release Process
 
 1. Merge PRs into `main`.
-2. Bump version with Hatch (`hatch version <major|minor|patch>`).
+2. Bump version manually in [pyproject.toml](pyproject.toml).
 3. Tag release: `git tag vX.Y.Z && git push --tags`.
 4. CI publishes to PyPI.
 
