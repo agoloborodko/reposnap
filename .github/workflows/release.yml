@@ -29,8 +29,9 @@ jobs:
 
       - run: |
           rye sync
-          rye build --clean
-          rye run -e 'twine>=5' twine check dist/*
+          rye build --clean                     # produces dist/*
+          python -m pip install --upgrade --no-cache-dir twine
+          twine check dist/*
 
       - id: repo
         run: |
