@@ -14,7 +14,7 @@ class MyCheckBox(urwid.CheckBox):
 class RepoSnapGUI:
     def __init__(self):
         self.controller = ProjectController()
-        self.root_dir = Path('.').resolve()
+        self.root_dir = Path(".").resolve()
         self.file_tree = None
         self.selected_files = set()
 
@@ -22,23 +22,22 @@ class RepoSnapGUI:
         self.build_main_menu()
 
     def build_main_menu(self):
-        self.root_dir_edit = urwid.Edit(('bold', "Root Directory: "), str(self.root_dir))
+        self.root_dir_edit = urwid.Edit(
+            ("bold", "Root Directory: "), str(self.root_dir)
+        )
         scan_button = urwid.Button("Scan", on_press=self.on_scan)
 
         main_menu = urwid.Frame(
-            header=urwid.Text(('bold', "RepoSnap - Main Menu")),
+            header=urwid.Text(("bold", "RepoSnap - Main Menu")),
             body=urwid.Padding(
                 urwid.LineBox(
-                    urwid.ListBox(
-                        urwid.SimpleFocusListWalker([
-                            self.root_dir_edit
-                        ])
-                    ),
-                    title="Enter Root Directory"
+                    urwid.ListBox(urwid.SimpleFocusListWalker([self.root_dir_edit])),
+                    title="Enter Root Directory",
                 ),
-                left=2, right=2
+                left=2,
+                right=2,
             ),
-            footer=urwid.Padding(scan_button, align='center')
+            footer=urwid.Padding(scan_button, align="center"),
         )
 
         self.main_widget = main_menu
@@ -56,9 +55,9 @@ class RepoSnapGUI:
         render_button = urwid.Button("Render", on_press=self.on_render)
 
         tree_menu = urwid.Frame(
-            header=urwid.Text(('bold', f"File Tree of {self.root_dir}")),
+            header=urwid.Text(("bold", f"File Tree of {self.root_dir}")),
             body=urwid.LineBox(tree_listbox),
-            footer=urwid.Padding(render_button, align='center')
+            footer=urwid.Padding(render_button, align="center"),
         )
 
         self.main_widget = tree_menu
@@ -67,23 +66,25 @@ class RepoSnapGUI:
     def build_tree_widget(self, tree_structure, parent_path="", level=0):
         widgets = []
         for key, value in sorted(tree_structure.items()):
-            node_path = f"{parent_path}/{key}".lstrip('/')
+            node_path = f"{parent_path}/{key}".lstrip("/")
             checkbox = MyCheckBox(
                 key,
-                user_data={'path': node_path, 'level': level},
+                user_data={"path": node_path, "level": level},
                 state=False,
-                on_state_change=self.on_checkbox_change
+                on_state_change=self.on_checkbox_change,
             )
-            indented_checkbox = urwid.Padding(checkbox, left=4*level)
+            indented_checkbox = urwid.Padding(checkbox, left=4 * level)
             widgets.append(indented_checkbox)
             if isinstance(value, dict):
-                widgets.extend(self.build_tree_widget(value, node_path, level=level+1))
+                widgets.extend(
+                    self.build_tree_widget(value, node_path, level=level + 1)
+                )
         return widgets
 
     def on_checkbox_change(self, checkbox, state):
         user_data = checkbox.user_data
-        node_path = user_data['path']
-        level = user_data['level']
+        node_path = user_data["path"]
+        level = user_data["level"]
         if state:
             self.selected_files.add(node_path)
         else:
@@ -108,10 +109,10 @@ class RepoSnapGUI:
             if isinstance(widget, urwid.Padding):
                 checkbox_widget = widget.original_widget
                 widget_user_data = checkbox_widget.user_data
-                widget_level = widget_user_data['level']
+                widget_level = widget_user_data["level"]
                 if widget_level > level:
                     checkbox_widget.set_state(state, do_callback=False)
-                    node_path = widget_user_data['path']
+                    node_path = widget_user_data["path"]
                     if state:
                         self.selected_files.add(node_path)
                     else:
@@ -124,12 +125,14 @@ class RepoSnapGUI:
 
     def on_render(self, button):
         self.controller.generate_output_from_selected(self.selected_files)
-        message = urwid.Text(('bold', f"Markdown generated at {self.controller.output_file}"))
+        message = urwid.Text(
+            ("bold", f"Markdown generated at {self.controller.output_file}")
+        )
         exit_button = urwid.Button("Exit", on_press=self.exit_program)
         result_menu = urwid.Frame(
-            header=urwid.Text(('bold', "Success")),
-            body=urwid.Filler(message, valign='middle'),
-            footer=urwid.Padding(exit_button, align='center')
+            header=urwid.Text(("bold", "Success")),
+            body=urwid.Filler(message, valign="middle"),
+            footer=urwid.Padding(exit_button, align="center"),
         )
         self.main_widget = result_menu
         self.refresh()

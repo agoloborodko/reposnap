@@ -19,12 +19,12 @@ repos:
   # Project‑specific commands driven by Rye
   - repo: local
     hooks:
-      # - id: rye-fmt
-      #   name: rye fmt --check
-      #   entry: rye
-      #   language: system
-      #   args: ["fmt", "--check"]
-      #   pass_filenames: false
+      - id: rye-fmt
+        name: rye fmt --check
+        entry: rye
+        language: system
+        args: ["fmt", "--check"]
+        pass_filenames: false
 
       - id: rye-lint
         name: rye lint
@@ -33,11 +33,11 @@ repos:
         args: ["lint"]
         pass_filenames: false
 
-      - id: pytest
-        name: pytest (quick)
-        entry: pytest
+      - id: rye-test
+        name: rye test (quick)
+        entry: rye
         language: system
-        args: ["-q"]
+        args: ["test", "-q"]
         pass_filenames: false
         always_run: true
         # Skip if only docs/markdown changed

@@ -19,10 +19,12 @@ class FileTree:
         """
         return self._extract_files(self.structure)
 
-    def _extract_files(self, subtree: Dict[str, Any], path_prefix: str = '') -> List[Path]:
+    def _extract_files(
+        self, subtree: Dict[str, Any], path_prefix: str = ""
+    ) -> List[Path]:
         files: List[Path] = []
         for key, value in subtree.items():
-            current_path: str = f"{path_prefix}/{key}".lstrip('/')
+            current_path: str = f"{path_prefix}/{key}".lstrip("/")
             if isinstance(value, dict):
                 files.extend(self._extract_files(value, current_path))
             else:
@@ -39,17 +41,23 @@ class FileTree:
         self.logger.debug("Filtering files in the file tree.")
         self.structure = self._filter_tree(self.structure, spec)
 
-    def _filter_tree(self, subtree: Dict[str, Any], spec: pathspec.PathSpec, path_prefix: str = '') -> Dict[str, Any]:
+    def _filter_tree(
+        self, subtree: Dict[str, Any], spec: pathspec.PathSpec, path_prefix: str = ""
+    ) -> Dict[str, Any]:
         filtered_subtree: Dict[str, Any] = {}
         for key, value in subtree.items():
-            current_path: str = f"{path_prefix}/{key}".lstrip('/')
+            current_path: str = f"{path_prefix}/{key}".lstrip("/")
             if isinstance(value, dict):
-                filtered_value: Dict[str, Any] = self._filter_tree(value, spec, current_path)
+                filtered_value: Dict[str, Any] = self._filter_tree(
+                    value, spec, current_path
+                )
                 if filtered_value:
                     filtered_subtree[key] = filtered_value
             else:
                 # Exclude the file if either the full path OR its basename matches a .gitignore pattern.
-                if not spec.match_file(current_path) and not spec.match_file(Path(current_path).name):
+                if not spec.match_file(current_path) and not spec.match_file(
+                    Path(current_path).name
+                ):
                     filtered_subtree[key] = value
         return filtered_subtree
 
@@ -65,12 +73,16 @@ class FileTree:
         """
         return self._prune_tree(self.structure, selected_files)
 
-    def _prune_tree(self, subtree: Dict[str, Any], selected_files: set, path_prefix: str = '') -> Dict[str, Any]:
+    def _prune_tree(
+        self, subtree: Dict[str, Any], selected_files: set, path_prefix: str = ""
+    ) -> Dict[str, Any]:
         pruned_subtree: Dict[str, Any] = {}
         for key, value in subtree.items():
-            current_path: str = f"{path_prefix}/{key}".lstrip('/')
+            current_path: str = f"{path_prefix}/{key}".lstrip("/")
             if isinstance(value, dict):
-                pruned_value: Dict[str, Any] = self._prune_tree(value, selected_files, current_path)
+                pruned_value: Dict[str, Any] = self._prune_tree(
+                    value, selected_files, current_path
+                )
                 if pruned_value:
                     pruned_subtree[key] = pruned_value
             else:
