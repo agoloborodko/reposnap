@@ -30,4 +30,3 @@ class GitRepo:
         except InvalidGitRepositoryError:
             self.logger.error(f"Invalid Git repository at: {self.repo_path}")
             return []
-
