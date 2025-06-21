@@ -78,3 +78,51 @@ def test_cli(mock_controller, temp_dir):
         main()
 
     mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_with_changes_flag(mock_controller, temp_dir):
+    """Test that the --changes flag is properly parsed and passed to controller."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    with patch("sys.argv", ["cli.py", str(temp_dir), "--changes"]):
+        main()
+
+    # Verify controller was called with args containing changes=True
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.changes is True
+    mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_with_changes_short_flag(mock_controller, temp_dir):
+    """Test that the -c flag is properly parsed and passed to controller."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    with patch("sys.argv", ["cli.py", str(temp_dir), "-c"]):
+        main()
+
+    # Verify controller was called with args containing changes=True
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.changes is True
+    mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_without_changes_flag(mock_controller, temp_dir):
+    """Test that changes defaults to False when flag is not provided."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    with patch("sys.argv", ["cli.py", str(temp_dir)]):
+        main()
+
+    # Verify controller was called with args containing changes=False (default)
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.changes is False
+    mock_controller_instance.run.assert_called_once()

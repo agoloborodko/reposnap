@@ -40,6 +40,12 @@ def main():
         default=[],
         help="File/folder patterns to exclude.",
     )
+    parser.add_argument(
+        "-c",
+        "--changes",
+        action="store_true",
+        help="Use only files that are added/modified/untracked/stashed but not yet committed.",
+    )
 
     args = parser.parse_args()
 
