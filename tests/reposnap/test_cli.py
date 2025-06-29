@@ -126,3 +126,98 @@ def test_cli_without_changes_flag(mock_controller, temp_dir):
     args = mock_controller.call_args[0][0]
     assert args.changes is False
     mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_with_contains_flag_single(mock_controller, temp_dir):
+    """Test that the --contains flag with single value is properly parsed."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    with patch("sys.argv", ["cli.py", str(temp_dir), "--contains", "import"]):
+        main()
+
+    # Verify controller was called with args containing contains=["import"]
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.contains == ["import"]
+    assert args.contains_case is False  # Default
+    mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_with_contains_flag_multiple(mock_controller, temp_dir):
+    """Test that the --contains flag with multiple values is properly parsed."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    with patch(
+        "sys.argv", ["cli.py", str(temp_dir), "-S", "import", "logging", "TODO"]
+    ):
+        main()
+
+    # Verify controller was called with args containing multiple patterns
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.contains == ["import", "logging", "TODO"]
+    assert args.contains_case is False  # Default
+    mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_with_contains_case_flag(mock_controller, temp_dir):
+    """Test that the --contains-case flag is properly parsed."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    with patch("sys.argv", ["cli.py", str(temp_dir), "-S", "TODO", "--contains-case"]):
+        main()
+
+    # Verify controller was called with args containing contains_case=True
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.contains == ["TODO"]
+    assert args.contains_case is True
+    mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_contains_defaults(mock_controller, temp_dir):
+    """Test that contains flags default correctly when not provided."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    with patch("sys.argv", ["cli.py", str(temp_dir)]):
+        main()
+
+    # Verify controller was called with default contains values
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.contains == []  # Default empty list
+    assert args.contains_case is False  # Default False
+    mock_controller_instance.run.assert_called_once()
+
+
+@patch("reposnap.interfaces.cli.ProjectController")
+def test_cli_contains_with_binary_files(mock_controller, temp_dir):
+    """Test that binary files are properly handled in contains filter."""
+    mock_controller_instance = MagicMock()
+    mock_controller.return_value = mock_controller_instance
+
+    # Create a binary file and a text file
+    binary_file = os.path.join(temp_dir, "binary.bin")
+    with open(binary_file, "wb") as f:
+        f.write(b"\x00\x01binary\x00data\xff")
+
+    text_file = os.path.join(temp_dir, "text.py")
+    with open(text_file, "w") as f:
+        f.write("import logging\ndef main(): pass\n")
+
+    with patch("sys.argv", ["cli.py", str(temp_dir), "-S", "import"]):
+        main()
+
+    # Should have been called and run successfully
+    mock_controller.assert_called_once()
+    args = mock_controller.call_args[0][0]
+    assert args.contains == ["import"]
+    mock_controller_instance.run.assert_called_once()

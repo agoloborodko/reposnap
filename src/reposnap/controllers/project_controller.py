@@ -19,7 +19,13 @@ class ProjectController:
             ]
             self.input_paths = []
             for p in input_paths:
-                candidate = (self.root_dir / p).resolve()
+                if p.is_absolute():
+                    # Handle absolute paths - use as-is but verify they're under root_dir
+                    candidate = p.resolve()
+                else:
+                    # Handle relative paths - join with root_dir
+                    candidate = (self.root_dir / p).resolve()
+
                 if candidate.exists():
                     try:
                         rel = candidate.relative_to(self.root_dir)
@@ -31,7 +37,7 @@ class ProjectController:
                         )
                 else:
                     self.logger.warning(
-                        f"Path {p} does not exist relative to repository root {self.root_dir}."
+                        f"Path {p} does not exist or is not under repository root {self.root_dir}."
                     )
             self.output_file: Path = (
                 Path(args.output).resolve()
@@ -48,6 +54,8 @@ class ProjectController:
                 args.exclude if hasattr(args, "exclude") else []
             )
             self.changes_only: bool = getattr(args, "changes", False)
+            self.contains: List[str] = getattr(args, "contains", [])
+            self.contains_case: bool = getattr(args, "contains_case", False)
         else:
             self.args = None
             self.input_paths = []
@@ -56,6 +64,8 @@ class ProjectController:
             self.include_patterns = []
             self.exclude_patterns = []
             self.changes_only = False
+            self.contains = []
+            self.contains_case = False
         self.file_tree: Optional[FileTree] = None
         self.gitignore_patterns: List[str] = []
         if self.root_dir:
@@ -110,6 +120,58 @@ class ProjectController:
             files = [f for f in files if not spec_exc.match_file(f.as_posix())]
         return files
 
+    def _apply_content_filter(self, files: List[Path]) -> List[Path]:
+        """
+        Filter files based on content substring matching.
+
+        Args:
+            files: List of relative file paths to filter
+
+        Returns:
+            Filtered list of files that contain at least one of the patterns
+            specified in self.contains. Returns original list if no patterns
+            are specified.
+
+        Note:
+            Uses case-insensitive matching by default unless self.contains_case
+            is True. Skips binary files and files larger than 5MB for performance.
+        """
+        if not self.contains:
+            return files
+
+        from reposnap.core.content_search import filter_files_by_content
+
+        initial_count = len(files)
+        ignore_case = not self.contains_case
+
+        self.logger.debug(
+            f"Applying content filter with patterns: {self.contains}, "
+            f"ignore_case: {ignore_case}"
+        )
+
+        # Convert relative paths to absolute for content search
+        absolute_paths = [self.root_dir / file_path for file_path in files]
+        filtered_absolute = filter_files_by_content(
+            absolute_paths, self.contains, ignore_case
+        )
+
+        # Convert back to relative paths
+        filtered_files = []
+        for abs_path in filtered_absolute:
+            try:
+                rel_path = abs_path.relative_to(self.root_dir)
+                filtered_files.append(rel_path)
+            except ValueError:
+                continue
+
+        kept_count = len(filtered_files)
+        self.logger.info(
+            f"Applied content filter (kept {kept_count} / {initial_count})"
+        )
+        self.logger.debug(f"Files kept after content filter: {filtered_files}")
+
+        return filtered_files
+
     def collect_file_tree(self) -> None:
         if self.changes_only:
             self.logger.info("Collecting uncommitted files from Git repository.")
@@ -147,6 +209,8 @@ class ProjectController:
                         continue
         all_files = self._apply_include_exclude(all_files)
         self.logger.debug(f"All files after applying include/exclude: {all_files}")
+        all_files = self._apply_content_filter(all_files)
+        self.logger.debug(f"All files after applying content filter: {all_files}")
         if self.input_paths:
             trees = []
             for input_path in self.input_paths:
