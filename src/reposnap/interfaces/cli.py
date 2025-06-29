@@ -46,6 +46,18 @@ def main():
         action="store_true",
         help="Use only files that are added/modified/untracked/stashed but not yet committed.",
     )
+    parser.add_argument(
+        "-S",
+        "--contains",
+        nargs="+",
+        default=[],
+        help="Only include files whose contents contain these substrings",
+    )
+    parser.add_argument(
+        "--contains-case",
+        action="store_true",
+        help="Make --contains case-sensitive",
+    )
 
     args = parser.parse_args()
 

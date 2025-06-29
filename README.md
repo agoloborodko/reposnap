@@ -12,6 +12,7 @@
 - **Structure Only Option**: The `--structure-only` flag can be used to generate the Markdown file with just the directory structure, omitting the contents of the files.
 - **Gitignore Support**: Automatically respects `.gitignore` patterns to exclude files and directories.
 - **Include and Exclude Patterns**: Use `--include` and `--exclude` to specify patterns for files and directories to include or exclude.
+- **Content Filtering**: Use `--contains` to filter files based on their content, including only files that contain specific substrings or code patterns.
 - **Changes Only Mode**: Use `-c` or `--changes` to snapshot only uncommitted files (staged, unstaged, untracked, and stashed changes).
 
 ## Installation
@@ -37,7 +38,7 @@ pip install -r requirements.lock
 To use `reposnap` from the command line, run it with the following options:
 
 ```bash
-reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]] [-e EXCLUDE [EXCLUDE ...]] [-c] paths [paths ...]
+reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]] [-e EXCLUDE [EXCLUDE ...]] [-c] [-S CONTAINS [CONTAINS ...]] [--contains-case] paths [paths ...]
 ```
 
 - `paths`: One or more paths (files or directories) within the repository whose content and structure should be rendered.
@@ -48,6 +49,8 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]
 - `-i, --include`: File/folder patterns to include. For example, `-i "*.py"` includes only Python files.
 - `-e, --exclude`: File/folder patterns to exclude. For example, `-e "*.md"` excludes all Markdown files.
 - `-c, --changes`: Use only files that are added/modified/untracked/stashed but not yet committed.
+- `-S, --contains`: Only include files whose contents contain these substrings. Multiple patterns can be specified.
+- `--contains-case`: Make `--contains` case-sensitive (default is case-insensitive).
 
 #### Pattern Matching
 
@@ -59,6 +62,41 @@ reposnap [-h] [-o OUTPUT] [--structure-only] [--debug] [-i INCLUDE [INCLUDE ...]
   - `-e "gui"`: Excludes any files or directories containing `"gui"` in their names.
   - `-i "*.py"`: Includes only files ending with `.py`.
   - `-e "*.test.*"`: Excludes files with `.test.` in their names.
+
+#### Content Filtering
+
+The `--contains` (or `-S`) flag allows you to filter files based on their content, including only files that contain specific substrings. This is particularly useful for focusing on files that contain certain code patterns, imports, or keywords.
+
+- **Case Sensitivity**: By default, content matching is case-insensitive. Use the `--contains-case` flag to enable case-sensitive matching.
+- **Multiple Patterns**: You can specify multiple patterns, and files containing **any** of the patterns will be included (OR logic).
+- **Performance**: Large files (>5MB) and binary files are automatically skipped for performance and safety reasons.
+
+**Examples**:
+
+1. **Find files containing specific imports**:
+    ```bash
+    reposnap . -S "import logging"
+    ```
+
+2. **Search for multiple patterns (OR logic)**:
+    ```bash
+    reposnap . -S "TODO" "FIXME" "import requests"
+    ```
+
+3. **Case-sensitive content search**:
+    ```bash
+    reposnap . -S "TODO" --contains-case
+    ```
+
+4. **Combine content filtering with other filters**:
+    ```bash
+    reposnap . -S "class " -i "*.py" --structure-only
+    ```
+
+5. **Find files with specific function calls**:
+    ```bash
+    reposnap . -S "logger.error" "raise Exception"
+    ```
 
 #### Only Snapshot Your Current Work
 
@@ -132,6 +170,18 @@ This is particularly useful when you want to:
 
     ```bash
     reposnap . -c
+    ```
+
+7. **Find and document files containing specific code patterns**:
+
+    ```bash
+    reposnap . -S "import logging" "logger."
+    ```
+
+8. **Combine content filtering with file type filtering**:
+
+    ```bash
+    reposnap . -S "class " -i "*.py" --structure-only
     ```
 
 ### Graphical User Interface
